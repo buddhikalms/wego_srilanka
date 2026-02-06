@@ -1,20 +1,28 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import { HeroSection, SectionTitle, CategoryCard, DestinationCard } from '@/components/Components';
-import { categories, destinations } from '@/data/mockData';
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  HeroSection,
+  SectionTitle,
+  CategoryCard,
+  DestinationCard,
+} from "@/components/Components";
+import { categories, destinations } from "@/data/mockData";
 
-export default function CategoriesPage() {
+function CategoriesContent() {
   const searchParams = useSearchParams();
-  const filter = searchParams.get('filter');
+  const filter = searchParams.get("filter");
 
-  const filteredDestinations = filter 
-    ? destinations.filter(d => d.category.toLowerCase() === filter.toLowerCase())
+  const filteredDestinations = filter
+    ? destinations.filter(
+        (d) => d.category.toLowerCase() === filter.toLowerCase(),
+      )
     : [];
 
   return (
     <div>
-      <HeroSection 
+      <HeroSection
         title="Explore by Category"
         subtitle="Find experiences that match your interests"
         image="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&auto=format&fit=crop"
@@ -24,11 +32,11 @@ export default function CategoriesPage() {
       {!filter && (
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <SectionTitle 
+            <SectionTitle
               title="Browse Categories"
               subtitle="Discover Sri Lanka through different themes"
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categories.map((category) => (
                 <CategoryCard key={category.id} category={category} />
@@ -42,14 +50,17 @@ export default function CategoriesPage() {
       {filter && filteredDestinations.length > 0 && (
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <SectionTitle 
+            <SectionTitle
               title={`${filter.charAt(0).toUpperCase() + filter.slice(1)} Destinations`}
               subtitle="Explore places in this category"
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredDestinations.map((destination) => (
-                <DestinationCard key={destination.id} destination={destination} />
+                <DestinationCard
+                  key={destination.id}
+                  destination={destination}
+                />
               ))}
             </div>
           </div>
@@ -59,10 +70,26 @@ export default function CategoriesPage() {
       {filter && filteredDestinations.length === 0 && (
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto text-center">
-            <p className="text-gray-500 text-lg">No destinations found in this category.</p>
+            <p className="text-gray-500 text-lg">
+              No destinations found in this category.
+            </p>
           </div>
         </section>
       )}
     </div>
+  );
+}
+
+export default function CategoriesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <CategoriesContent />
+    </Suspense>
   );
 }
