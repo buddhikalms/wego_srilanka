@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Playfair Display', 'serif'],
-        body: ['Crimson Pro', 'serif'],
+        display: ['Merriweather Sans', 'Segoe UI', 'sans-serif'],
+        body: ['Source Sans 3', 'Segoe UI', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out',

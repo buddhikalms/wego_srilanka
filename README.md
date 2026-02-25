@@ -211,3 +211,66 @@ This is a demonstration project. Adapt and use as needed for your purposes.
 ---
 
 **Built with ❤️ for Sri Lanka Tourism**
+
+## Auth + Prisma (MySQL) Setup
+
+1. Copy env template and update values:
+```bash
+cp .env.example .env
+```
+
+2. Run migration and generate Prisma client:
+```bash
+npm run prisma:migrate
+npm run prisma:generate
+```
+
+3. Start app:
+```bash
+npm run dev
+```
+
+### New API Endpoints
+
+- `POST /api/register`
+- `GET /api/guides/profile`
+- `POST /api/guides/profile`
+- `POST /api/guides/activities`
+- `POST /api/guides/experiences`
+- `POST /api/guides/ratings`
+- `GET|POST /api/auth/[...nextauth]`
+
+## Guide Packages + Payments + City Search
+
+### Package Management for Guides
+- `GET /api/guides/packages` (guide only)
+- `POST /api/guides/packages` (guide only)
+  - Accepts itinerary days and pricing
+  - Automatically adds website fee: **10%**
+  - Stores: `basePrice`, `websiteFeeAmount`, `totalPrice`
+
+Guide UI page:
+- `/guide/packages` (create package, itinerary, Sri Lanka city autocomplete)
+
+### Public Package Browse
+- `GET /api/packages?city=Kandy`
+- `/packages` page now uses DB packages and shows price breakdown
+
+### Stripe Checkout
+- `POST /api/payments/checkout`
+- `POST /api/payments/webhook`
+
+Stripe webhook updates booking status to `PAID` when checkout completes.
+
+### Required Environment Variables
+- `DATABASE_URL`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `GEOAPIFY_API_KEY`
+
+### Stripe local webhook example
+```bash
+stripe listen --forward-to localhost:3000/api/payments/webhook
+```

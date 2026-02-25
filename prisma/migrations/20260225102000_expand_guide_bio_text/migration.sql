@@ -1,0 +1,2 @@
+ALTER TABLE `GuideProfile`
+MODIFY COLUMN `bio` TEXT NULL;

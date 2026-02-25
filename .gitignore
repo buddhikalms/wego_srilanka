@@ -26,6 +26,7 @@ yarn-error.log*
 
 # Local env files
 .env
+.env.local
 .env*.local
 
 # Vercel
@@ -41,3 +42,5 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+
+/src/generated/prisma

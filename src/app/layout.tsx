@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-
-const inter = Inter({ subsets: ["latin"] });
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Ceylon Travels - Discover Sri Lanka",
@@ -19,15 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <style>{`
-          .font-display {
-            font-family: inherit !important;
-          }
-        `}</style>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+      <body>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

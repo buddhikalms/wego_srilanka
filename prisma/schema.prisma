@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  GUIDE
+  ADMIN
+}
+
+enum GuideReviewStatus {
+  PROFILE_INCOMPLETE
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String?
+  fullName     String
+  role         UserRole    @default(USER)
+  emailVerified Boolean    @default(false)
+  emailVerificationToken String?   @unique
+  emailVerificationTokenExpiresAt DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  guideProfile  GuideProfile?
+  ratingsGiven  GuideRating[] @relation("RatingsGiven")
+  bookings      Booking[]
+}
+
+model GuideProfile {
+  id                 String          @id @default(cuid())
+  userId             String          @unique
+  bio                String?         @db.Text
+  phone              String?
+  location           String?
+  yearsOfExperience  Int             @default(0)
+  specialties        Json?
+  languages          Json?
+  hourlyRate         Decimal?        @db.Decimal(10, 2)
+  averageRating      Decimal         @default(0) @db.Decimal(3, 2)
+  ratingsCount       Int             @default(0)
+  adminReviewStatus  GuideReviewStatus @default(PROFILE_INCOMPLETE)
+  adminReviewNotes   String?         @db.Text
+  reviewSubmittedAt  DateTime?
+  reviewedAt         DateTime?
+  reviewedByUserId   String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities   GuideActivity[]
+  experiences  GuideExperience[]
+  ratings      GuideRating[]     @relation("GuideRatings")
+  packages     TourPackage[]
+}
+
+model GuideActivity {
+  id             String       @id @default(cuid())
+  guideProfileId String
+  title          String
+  category       String?
+  description    String?
+  durationHours  Float?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  guideProfile GuideProfile @relation(fields: [guideProfileId], references: [id], onDelete: Cascade)
+}
+
+model GuideExperience {
+  id             String       @id @default(cuid())
+  guideProfileId String
+  title          String
+  organization   String?
+  description    String?
+  startDate      DateTime?
+  endDate        DateTime?
+  isCurrent      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  guideProfile GuideProfile @relation(fields: [guideProfileId], references: [id], onDelete: Cascade)
+}
+
+model GuideRating {
+  id             String      @id @default(cuid())
+  guideProfileId String
+  reviewerId     String
+  rating         Int
+  comment        String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  guideProfile GuideProfile @relation("GuideRatings", fields: [guideProfileId], references: [id], onDelete: Cascade)
+  reviewer     User         @relation("RatingsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([guideProfileId, reviewerId])
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum BookingStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model TourPackage {
+  id                  String        @id @default(cuid())
+  guideProfileId      String
+  slug                String        @unique
+  title               String
+  description         String
+  basePrice           Decimal       @db.Decimal(10, 2)
+  websiteFeePercent   Decimal       @default(10) @db.Decimal(5, 2)
+  websiteFeeAmount    Decimal       @db.Decimal(10, 2)
+  totalPrice          Decimal       @db.Decimal(10, 2)
+  durationDays        Int
+  maxGroupSize        Int?
+  meetingCity         String
+  currency            String        @default("usd")
+  status              PackageStatus @default(DRAFT)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  guideProfile GuideProfile   @relation(fields: [guideProfileId], references: [id], onDelete: Cascade)
+  itineraries  ItineraryDay[]
+  bookings     Booking[]
+}
+
+model ItineraryDay {
+  id            String      @id @default(cuid())
+  packageId     String
+  dayNumber     Int
+  city          String
+  title         String
+  description   String?
+  activityType  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  package TourPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, dayNumber])
+}
+
+model Booking {
+  id                   String        @id @default(cuid())
+  userId               String
+  packageId            String
+  travelersCount       Int           @default(1)
+  amountTotal          Decimal       @db.Decimal(10, 2)
+  currency             String        @default("usd")
+  status               BookingStatus @default(PENDING)
+  stripeCheckoutId     String?       @unique
+  stripePaymentIntent  String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package TourPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+}
